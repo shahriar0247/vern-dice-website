@@ -7,15 +7,6 @@ from random import *
 
 def randomizer():
 
-    global list
-    global throws
-    global sixes
-    global fives
-    global fours
-    global threes
-    global twos
-    global ones 
-
     list = []
     throws = 100
     sixes = 0
@@ -51,6 +42,7 @@ def randomizer():
     for i in list:
         if i == 1:
             ones += 1
+    return throws, sixes, fives, fours, threes, twos, ones
 
 def __init_socket():
     port = 8080
@@ -69,28 +61,22 @@ def send_response(html):
     return response
 
 
-def render_html(filename):
+def render_html(filename, json: dict):
   file_ = open(filename, "r")
   data = file_.read()
+  for a in json.keys():
+      data = data.replace("{{" + str(a) + "}}", str(json[a]))
   file_.close()
   return data
 
 def main():
   server = __init_socket()
   while True:
-      client, addr = server.accept()
-      response = send_response(render_html("index.html"))
-      response = f"""
-      <div>Amount of throws: {throws}</div>
-      <div>Sixes: {sixes}</div>
-      <div>Fives: {fives}</div>
-      <div>Fours: {fours}</div>
-      <div>Threes: {threes}</div>
-      <div>Twos: {twos}</div>
-      <div>Ones: {ones}</div>
-      <input type="button" value="Calculate" onClick="window.location.reload(true)">
-      """
-      client.send((response).encode())
+    client, addr = server.accept()
+    throws, sixes, fives, fours, threes, twos, ones = randomizer()
+    response = send_response(render_html("index.html", {'hello': "hi", "throws": throws,"sixes": sixes, "fives": fives, "fours": fours, "threes": threes, "twos": twos, "ones": ones }))
+    
+    client.send((response).encode())
 
 try:
   main()
